@@ -1,0 +1,19 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "24.6.0",
+    "sdksVersions": {},
+    "version": "1.21.1",
+    "libraryName": "fred-usage-log",
+    "libraryId": "ba72d04a-0ffe-4e7a-af89-ca5069047451",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "FredUsageLog",
+    "solutionShortDescription": "FredUsageLog description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "extension",
+    "extensionType": "ApplicationCustomizer"
+  }
+}
