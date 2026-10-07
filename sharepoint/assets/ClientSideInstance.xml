@@ -3,7 +3,7 @@
     <ClientSideComponentInstance
         Title="UsageLoggerFred"
         Location="ClientSideExtension.ApplicationCustomizer"
-        ComponentId="9c06a673-da83-4352-b1cd-4ffbc541b8a1"
+        ComponentId="dda2a4dd-4b78-4d6a-92a4-345bf9cde592"
         Properties="{&quot;testMessage&quot;:&quot;Test message&quot;}">
     </ClientSideComponentInstance>
 </Elements>

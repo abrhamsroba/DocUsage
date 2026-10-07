@@ -2,27 +2,36 @@ import { Log } from '@microsoft/sp-core-library';
 import { BaseApplicationCustomizer } from '@microsoft/sp-application-base';
 import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 
+
 export interface IUsageLoggerFredApplicationCustomizerProperties {
-  LoggingSiteUrl?: string; // optional: central logging site
-  ListTitle: string;       // e.g., "Site Usage Data"
-  ThrottleMs?: number;     // optional delay before logging
+  LoggingSiteUrl?: string;
+  ListTitle?: string;
+  ThrottleMs?: number;
 }
 
+
 const LOG_SOURCE: string = 'UsageLoggerFredApplicationCustomizer';
+
 
 export default class UsageLoggerFredApplicationCustomizer
   extends BaseApplicationCustomizer<IUsageLoggerFredApplicationCustomizerProperties> {
 
+
+  // ============================================================
+  // INITIALIZATION
+  // ============================================================
+
   public async onInit(): Promise<void> {
+
     try {
 
       // ============================================================
       // MICROSOFT CLARITY
       // ============================================================
 
-      const clarityScript = document.createElement("script");
+      const clarityScript = document.createElement('script');
 
-      clarityScript.type = "text/javascript";
+      clarityScript.type = 'text/javascript';
 
       clarityScript.text = `
         (function(c,l,a,r,i,t,y){
@@ -47,137 +56,32 @@ export default class UsageLoggerFredApplicationCustomizer
       this._initializeDocumentTracking();
 
 
-      // ============================================================
-      // EXISTING PAGE USAGE TRACKING
-      // ============================================================
-
-      // Prevent duplicate log on same page load
-      const pageKey = `usageLogged:${location.href}`;
-
-      if (sessionStorage.getItem(pageKey)) {
-        return;
-      }
-
-
-      const delay = this.properties?.ThrottleMs ?? 0;
-
-      if (delay > 0) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-
-
-      let pageUrl = location.href.split('?')[0];
-
-
-      try {
-
-        const entries =
-          performance.getEntriesByType?.('navigation');
-
-        if (entries?.length) {
-
-          const navEntry =
-            entries[0] as PerformanceNavigationTiming;
-
-          if (navEntry.name) {
-            pageUrl =
-              navEntry.name.split('?')[0];
-          }
-
-        }
-
-      } catch {
-
-        // fallback already set
-
-      }
-
-
-      const pageTitle =
-        (document.title || '').substring(0, 255);
-
-      const referrer =
-        (document.referrer || '').substring(0, 255);
-
-      const siteUrl =
-        this.context.pageContext.site.absoluteUrl;
-
-      const webUrl =
-        this.context.pageContext.web.absoluteUrl;
-
-      const userDisp =
-        (this.context.pageContext.user.displayName || '')
-          .substring(0, 255);
-
-      const clientInfo =
-        this._getClientInfo().substring(0, 255);
-
-      const sessionId =
-        this._ensureSessionId();
-
-      const isHome =
-        this._isHomePage();
-
-
-      const targetSite =
-        this.properties?.LoggingSiteUrl || webUrl;
-
-      const listTitle =
-        this.properties?.ListTitle || 'Site Usage Data';
-
-
-      await this._addItem(
-        targetSite,
-        listTitle,
-        {
-          PageUrl: pageUrl,
-          PageTitle: pageTitle,
-          Referrer: referrer,
-          SiteUrl: siteUrl,
-          WebUrl: webUrl,
-          UserDisplayName: userDisp,
-          SessionId: sessionId,
-          IsHomePage: isHome,
-          ClientInfo: clientInfo,
-          TimeStamp: new Date().toISOString(),
-          RawPath: location.pathname,
-          LocationHash: location.hash
-        }
-      );
-
-
-      sessionStorage.setItem(
-        pageKey,
-        '1'
-      );
-
-
       Log.info(
         LOG_SOURCE,
-        'Usage item created.'
+        'Document usage tracking initialized.'
       );
 
-
-    } catch (e) {
+    } catch (error) {
 
       Log.warn(
         LOG_SOURCE,
-        e as any
+        error as any
       );
 
     }
+
   }
 
 
-
-  // ==============================================================
+  // ============================================================
   // DOCUMENT TRACKING
-  // ==============================================================
+  // ============================================================
 
   private _initializeDocumentTracking(): void {
 
     document.addEventListener(
       'click',
+
       (event: MouseEvent) => {
 
         try {
@@ -190,7 +94,7 @@ export default class UsageLoggerFredApplicationCustomizer
           }
 
 
-          // Find closest link
+          // Find the closest clicked link
           const anchor =
             target.closest('a') as HTMLAnchorElement;
 
@@ -203,7 +107,7 @@ export default class UsageLoggerFredApplicationCustomizer
             anchor.href;
 
 
-          // Only continue if this is a supported document
+          // Only continue when the clicked URL is a document
           if (!this._isDocument(documentUrl)) {
             return;
           }
@@ -220,7 +124,6 @@ export default class UsageLoggerFredApplicationCustomizer
 
           });
 
-
         } catch (error) {
 
           Log.warn(
@@ -231,16 +134,16 @@ export default class UsageLoggerFredApplicationCustomizer
         }
 
       },
+
       true
     );
 
   }
 
 
-
-  // ==============================================================
+  // ============================================================
   // CHECK IF CLICKED URL IS A DOCUMENT
-  // ==============================================================
+  // ============================================================
 
   private _isDocument(url: string): boolean {
 
@@ -279,7 +182,6 @@ export default class UsageLoggerFredApplicationCustomizer
           cleanUrl.endsWith(extension)
       );
 
-
     } catch {
 
       return false;
@@ -289,10 +191,9 @@ export default class UsageLoggerFredApplicationCustomizer
   }
 
 
-
-  // ==============================================================
+  // ============================================================
   // LOG DOCUMENT INTERACTION
-  // ==============================================================
+  // ============================================================
 
   private async _logDocumentInteraction(
     documentUrl: string
@@ -308,7 +209,6 @@ export default class UsageLoggerFredApplicationCustomizer
       // Decode URL safely
       let decodedUrl =
         cleanUrl;
-
 
       try {
 
@@ -391,23 +291,29 @@ export default class UsageLoggerFredApplicationCustomizer
         this._ensureSessionId();
 
 
-      // Page where user clicked the document
+      // Page where the user clicked the document
       const sourcePageUrl =
         location.href.split('?')[0];
 
 
       // Central logging site
       const targetSite =
-        this.properties?.LoggingSiteUrl
-        || webUrl;
+        this.properties?.LoggingSiteUrl ||
+        webUrl;
 
+
+      // Document usage list
+      const listTitle =
+        this.properties?.ListTitle ||
+        'Document Usage Data';
 
 
       // ============================================================
       // DUPLICATE PROTECTION
+      // ============================================================
       //
       // SharePoint can trigger multiple browser events from one click.
-      // We ignore the same document for 3 seconds.
+      // Ignore the same document for 3 seconds.
       // ============================================================
 
       const duplicateKey =
@@ -446,7 +352,6 @@ export default class UsageLoggerFredApplicationCustomizer
       );
 
 
-
       // ============================================================
       // SAVE TO DOCUMENT USAGE DATA
       // ============================================================
@@ -455,7 +360,7 @@ export default class UsageLoggerFredApplicationCustomizer
 
         targetSite,
 
-        'Document Usage Data',
+        listTitle,
 
         {
 
@@ -468,7 +373,7 @@ export default class UsageLoggerFredApplicationCustomizer
           DocumentUrl:
             decodedUrl,
 
-          // We'll populate this in the next version
+          // Can be populated in a later version
           LibraryName:
             '',
 
@@ -496,7 +401,7 @@ export default class UsageLoggerFredApplicationCustomizer
           SourcePageUrl:
             sourcePageUrl,
 
-          // We'll populate this in the next version
+          // Can be populated in a later version
           DocumentUniqueId:
             '',
 
@@ -513,7 +418,6 @@ export default class UsageLoggerFredApplicationCustomizer
         `Document logged: ${documentName}`
       );
 
-
     } catch (error) {
 
       Log.warn(
@@ -526,35 +430,9 @@ export default class UsageLoggerFredApplicationCustomizer
   }
 
 
-
-  // ==============================================================
-  // EXISTING CLIENT INFORMATION
-  // ==============================================================
-
-  private _getClientInfo(): string {
-
-    const w: any = window;
-
-    const s = screen;
-
-    const dpr =
-      w.devicePixelRatio || 1;
-
-
-    return (
-      `ua:${navigator.userAgent}` +
-      `|wh:${w.innerWidth}x${w.innerHeight}` +
-      `|scr:${s?.width}x${s?.height}` +
-      `|dpr:${dpr}`
-    );
-
-  }
-
-
-
-  // ==============================================================
-  // EXISTING SESSION ID
-  // ==============================================================
+  // ============================================================
+  // SESSION ID
+  // ============================================================
 
   private _ensureSessionId(): string {
 
@@ -588,57 +466,9 @@ export default class UsageLoggerFredApplicationCustomizer
   }
 
 
-
-  // ==============================================================
-  // EXISTING HOME PAGE CHECK
-  // ==============================================================
-
-  private _isHomePage(): boolean {
-
-    try {
-
-      const serverRel =
-        this.context
-          .pageContext
-          .site
-          .serverRelativeUrl
-          ?.replace(/\/$/, '')
-        || '';
-
-
-      const current =
-        (
-          this.context.pageContext.site as any
-        )
-          .serverRequestPath
-          ?.replace(/\/$/, '')
-
-        ||
-
-        location.pathname
-          .replace(/\/$/, '');
-
-
-      return (
-        current === '' ||
-        current === '/' ||
-        current === serverRel
-      );
-
-
-    } catch {
-
-      return false;
-
-    }
-
-  }
-
-
-
-  // ==============================================================
-  // EXISTING SHAREPOINT LIST WRITER
-  // ==============================================================
+  // ============================================================
+  // SHAREPOINT LIST WRITER
+  // ============================================================
 
   private async _addItem(
     targetSiteUrl: string,
@@ -684,7 +514,7 @@ export default class UsageLoggerFredApplicationCustomizer
 
 
       throw new Error(
-        `Usage log failed: ` +
+        `Document usage log failed: ` +
         `${resp.status} ` +
         `${resp.statusText} - ` +
         `${text}`

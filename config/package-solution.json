@@ -1,8 +1,8 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
-    "name": "Fred-Prod-Site-Usage",
-    "id": "7872e44a-7bc0-4eee-b05e-b33be331c31f",
+    "name": "Fred-Prod-Doc-Usage",
+    "id": "b90aa60e-8ad9-4573-ac7d-25c33dff5be0",
     "version": "1.0.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
@@ -16,10 +16,10 @@
     },
     "metadata": {
       "shortDescription": {
-        "default": "FredUsageLog description"
+        "default": "FRED Document Usage Logger"
       },
       "longDescription": {
-        "default": "FredUsageLog description"
+        "default": "Tracks FRED document usage and records document interactions."
       },
       "screenshotPaths": [],
       "videoUrl": "",
@@ -27,8 +27,8 @@
     },
     "features": [
       {
-        "title": "Application Extension - Deployment of custom action",
-        "description": "Deploys a custom action with ClientSideComponentId association",
+        "title": "Document Usage Application Extension",
+        "description": "Deploys the FRED Document Usage Application Customizer",
         "id": "1f6e4130-549c-486a-b6e0-aac637019c63",
         "version": "1.0.0.0",
         "assets": {
@@ -41,6 +41,6 @@
     ]
   },
   "paths": {
-    "zippedPackage": "solution/Prod-Site-usage-log.sppkg"
+    "zippedPackage": "solution/Prod-Doc-usage-log.sppkg"
   }
 }
